@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const {graphqlHTTP} = require('express-graphql');
 const { buildSchema} = require('graphql');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -47,12 +48,11 @@ app.use(
           },
           createPost: (args) => {
               const post ={
-                _id:  Math.random().toString(),
-                title: args.postInput.title,
+                _id:  Math.random().toString(), title: args.postInput.title,
                 author: args.postInput.author,
                 body:args.postInput.body,
                 comments: args.postInput.comments,
-                date: Date.now().toString(),
+                date: args.postInput.date,
                 hidden: args.postInput.hidden,
               };
               posts.push(post);
@@ -61,6 +61,10 @@ app.use(
       },
       graphiql: true
     })
-  );
-
-app.listen(3000);
+);
+mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.0jqgt.mongodb.net${process.env.MONGO_DB}?retryWrites=true&w=majority`) .then(() => {
+    app.listen(4000);
+  })
+  .catch(err => {
+    console.log(err);
+  });
