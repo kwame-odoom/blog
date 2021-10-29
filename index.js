@@ -52,7 +52,7 @@ app.use(
                 author: args.postInput.author,
                 body:args.postInput.body,
                 comments: args.postInput.comments,
-                date: args.postInput.date,
+                date: Date.now().toString(),
                 hidden: args.postInput.hidden,
               };
               posts.push(post);
