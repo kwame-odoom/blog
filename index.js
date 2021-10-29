@@ -1,10 +1,67 @@
-const  express  =  require('express');
-const ExpressGraphQL = require("express-graphql");
-const schema = require("./graphql/post/post.js");
-const  app  =  express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const {graphqlHTTP} = require('express-graphql');
+const { buildSchema} = require('graphql');
+const { argsToArgsConfig } = require('graphql/type/definition');
 
-app.use("/graphql", ExpressGraphQL({ schema: schema.schema, graphiql: true}));
+const app = express();
 
-app.listen(4000, () => {
-    console.log("GraphQL server running at http://localhost:4000.");
-});
+const posts = [];
+
+app.use(bodyParser.json());
+
+app.use(
+    '/graphql',
+    graphqlHTTP({
+      schema: buildSchema(`
+      type Post{
+          _id: ID!
+          title:  String!
+            author: String!
+            body:   String!
+            comments: String
+            date: String
+            hidden: Boolean
+      }
+      input PostInput{
+        title:  String!
+        author: String!
+        body:   String!
+        comments: String
+        date: String
+        hidden: Boolean
+    }
+      type myQuery{
+          posts : [Post!]!
+        }
+      type myMutation{
+          createPost(postInput: PostInput) :Post
+        }
+        schema{
+            query: myQuery
+            mutation: myMutation
+        }
+      `),
+      rootValue: {
+          posts: ()=>{
+              return posts;
+          },
+          createPost: (args) => {
+              const post ={
+                _id:  Math.random().toString(),
+                title: args.postInput.title,
+                author: args.postInput.author,
+                body:args.postInput.body,
+                comments: args.postInput.comments,
+                date: args.postInput.date,
+                hidden: args.postInput.hidden,
+              };
+              posts.push(post);
+              return post;
+          }
+      },
+      graphiql: true
+    })
+  );
+
+app.listen(3000);
